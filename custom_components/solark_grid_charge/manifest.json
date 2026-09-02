@@ -1,0 +1,17 @@
+{
+  "domain": "solark_grid_charge",
+  "name": "SolArk Grid Charge",
+  "version": "1.0.0",
+  "documentation": "https://github.com/andrewjfreyer/solark-grid-charge",
+  "issue_tracker": "https://github.com/andrewjfreyer/solark-grid-charge/issues",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [
+    "@andrewjfreyer"
+  ],
+  "config_flow": true,
+  "iot_class": "cloud_polling",
+  "loggers": [
+    "custom_components.solark_grid_charge"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "SolArk Grid Charge",
+  "content_in_root": false,
+  "render_readme": true,
+  "domains": [
+    "solark_grid_charge"
+  ],
+  "homeassistant": "2023.5.0",
+  "country": "US"
+}

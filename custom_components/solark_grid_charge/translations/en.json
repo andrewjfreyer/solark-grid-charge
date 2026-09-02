@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SolArk Grid Charge",
+        "description": "Enter your SolArk Cloud credentials and plant ID. With auto-discover enabled, the API URL is read from the portal frontend.",
+        "data": {
+          "username": "Username (email)",
+          "password": "Password",
+          "plant_id": "Plant ID",
+          "auto_discover_api": "Auto-discover API URL from portal",
+          "base_url": "Portal base URL",
+          "api_url": "API URL (used when auto-discover is off, or as fallback)",
+          "scan_interval": "Settings poll interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to SolArk API.",
+      "auth_failed": "Authentication failed. Check credentials.",
+      "unknown": "Unexpected error occurred."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SolArk Grid Charge options",
+        "description": "Auto-discover reads VUE_APP_BASE_API from the SolArk portal so host changes do not break the integration.",
+        "data": {
+          "auto_discover_api": "Auto-discover API URL from portal",
+          "base_url": "Portal base URL",
+          "api_url": "API URL (used when auto-discover is off, or as fallback)",
+          "scan_interval": "Settings poll interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "switch": {
+      "grid_charge": {
+        "name": "Grid Charge"
+      }
+    }
+  }
+}
