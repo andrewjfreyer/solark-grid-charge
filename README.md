@@ -3,11 +3,12 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![GitHub release](https://img.shields.io/github/release/andrewjfreyer/solark-grid-charge.svg)](https://github.com/andrewjfreyer/solark-grid-charge/releases)
 
-A Home Assistant custom integration that exposes a single control for Sol-Ark inverter
-systems via the SolArk Cloud API: **whether the inverter may charge the battery from the
-grid**.
+A Home Assistant custom integration that exposes battery charging controls for Sol-Ark
+inverter systems via the SolArk Cloud API: **whether the inverter may charge the battery
+from the grid**, and **how much battery capacity it retains during each Time-of-Use
+slot**.
 
-This integration is deliberately narrow. It provides one switch and no sensors.
+This integration is deliberately narrow. It provides controls only, and no sensors.
 
 It uses its own domain (`solark_grid_charge`) and its own directory, so it installs and
 runs alongside the upstream monitoring integration without conflicting with it.
@@ -17,6 +18,9 @@ runs alongside the upstream monitoring integration without conflicting with it.
 | Entity ID | Description |
 |-----------|-------------|
 | `switch.solark_grid_charge` | Whether the inverter may charge the battery from the grid |
+| `number.solark_time_slot_1_battery_soc` … `_6_…` | Retained battery SOC for each Time-of-Use slot |
+
+### Grid Charge
 
 `switch.solark_grid_charge` mirrors the **Grid Charge** toggle on the Sol-Ark portal's
 *Battery Setting* page (settings field `sdChargeOn`). Turning it off stops the inverter
@@ -31,6 +35,32 @@ automations:
 | `grid_start_soc` | `sdStartCap` | Grid Start % |
 | `grid_start_voltage` | `sdStartVolt` | Grid Start V |
 | `grid_charge_current` | `sdBatteryCurrent` | Grid Start A |
+
+### Time-of-Use retained battery SOC
+
+The inverter's Work Mode page has six Time-of-Use slots. Each slot has a start time and
+a **Battery SOC** percentage — the level the inverter will not discharge below during
+that slot. Raising it reserves more capacity; lowering it allows deeper discharge.
+
+Six `number` entities map to those slots (settings fields `cap1`–`cap6`), each accepting
+0–100 %. They carry attributes identifying the slot:
+
+| Attribute | Portal field | Meaning |
+|-----------|--------------|---------|
+| `slot` | — | Slot number, 1–6 |
+| `slot_start` | `sellTimeN` | When the slot begins, `HH:MM` |
+| `grid_charge_enabled` | `timeNon` | Whether that slot has grid charge ticked |
+| `battery_mode` | `battMode` | How the inverter tracks battery level |
+| `applies_in_current_mode` | — | `false` if the inverter is in voltage mode, where `capN` is ignored |
+
+**Note on battery mode.** These values apply when the inverter tracks battery level by
+state of charge, which the portal treats as `battMode` of `-1` or `1`. If your inverter
+is in voltage mode it uses `sellTimeNVolt` instead, writes to `capN` have no effect, and
+`applies_in_current_mode` reports `false`. The entities remain visible either way rather
+than silently disappearing.
+
+Changing a slot's SOC does **not** change its start time or its grid-charge flag — only
+the one field is written.
 
 ## 📋 Requirements
 
@@ -131,6 +161,32 @@ automation:
           entity_id: switch.solark_grid_charge
 ```
 
+### Reserve more battery before a storm
+
+```yaml
+automation:
+  - alias: "Hold battery high when severe weather is forecast"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.severe_weather_alert
+        to: "on"
+    action:
+      - service: number.set_value
+        target:
+          entity_id:
+            - number.solark_time_slot_1_battery_soc
+            - number.solark_time_slot_2_battery_soc
+            - number.solark_time_slot_3_battery_soc
+            - number.solark_time_slot_4_battery_soc
+            - number.solark_time_slot_5_battery_soc
+            - number.solark_time_slot_6_battery_soc
+        data:
+          value: 80
+      - service: switch.turn_on
+        target:
+          entity_id: switch.solark_grid_charge
+```
+
 ## 🔧 Troubleshooting
 
 ### Integration won't connect
@@ -179,12 +235,12 @@ logger:
   backend merges by key, so neighbouring settings are left untouched.
 - **Polling**: one coordinator, default 60s, 30s minimum.
 
-### Why only one control?
+### Why so few controls?
 
 The settings endpoint exposes hundreds of writable fields, including grid protection
 limits and battery voltage thresholds where a bad value can damage hardware or violate
-interconnection rules. Grid Charge is a safe, reversible, genuinely useful toggle. Other
-fields are intentionally not exposed.
+interconnection rules. Grid Charge and the Time-of-Use retained SOC are safe,
+reversible, genuinely useful settings. Other fields are intentionally not exposed.
 
 ## 🤝 Contributing
 

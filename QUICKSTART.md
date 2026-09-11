@@ -2,12 +2,15 @@
 
 ## What You'll Get
 
-One entity:
+Seven entities:
 
 - `switch.solark_grid_charge` — whether the inverter may charge the battery from the grid
+- `number.solark_time_slot_1_battery_soc` … `_6_…` — the battery SOC the inverter retains
+  during each of the six Time-of-Use slots
 
-This mirrors the **Grid Charge** toggle on the Sol-Ark portal's *Battery Setting* page.
-The integration provides no sensors.
+These mirror the **Grid Charge** toggle on the Sol-Ark portal's *Battery Setting* page
+and the **Battery SOC** fields on its *Work Mode* page. The integration provides
+controls only, and no sensors.
 
 ## Installation (4 Steps)
 
@@ -45,8 +48,9 @@ The integration provides no sensors.
 
 1. Go to **Developer Tools** → **States**
 2. Search for: `solark`
-3. You should see `switch.solark_grid_charge` matching what the portal shows
-4. Toggle it and confirm the portal's Battery Setting page follows within ~15 seconds
+3. You should see `switch.solark_grid_charge` and six `number.solark_time_slot_*` entities
+   matching what the portal shows
+4. Toggle or set one and confirm the portal follows within ~15 seconds
 
 ## Troubleshooting
 
