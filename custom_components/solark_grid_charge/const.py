@@ -22,6 +22,19 @@ MIN_SCAN_INTERVAL = 30  # seconds
 # int; the portal's own switch posts the string "1" / "0".
 GRID_CHARGE_FIELD = "sdChargeOn"
 
+# Work Mode / Time-of-Use table. The inverter has six time slots; each has a
+# start time, a retained battery SOC, and its own grid-charge flag.
+TIME_SLOT_COUNT = 6
+SLOT_SOC_FIELD = "cap{n}"            # retained battery capacity, 0-100 %
+SLOT_START_FIELD = "sellTime{n}"     # slot start time, "HH:MM"
+SLOT_GRID_CHARGE_FIELD = "time{n}on"  # per-slot grid charge flag
+
+# Whether capN applies depends on how the inverter tracks battery level. The
+# portal validates capN as 0-100 only when battMode is -1 or 1, and treats
+# any other value as voltage mode, where the slot uses sellTimeNVolt instead.
+BATT_MODE_FIELD = "battMode"
+SOC_MODE_VALUES = (-1, 1, "-1", "1")
+
 # How long to trust our own optimistic state after issuing a command. The API
 # only acknowledges that a command was queued — the inverter applies it over
 # the dongle a few seconds later, so a read before then still shows the old
@@ -39,7 +52,7 @@ OBSOLETE_API_URLS = {
     "https://ecsprod-api.solarkcloud.com": DEFAULT_API_URL,
 }
 
-PLATFORMS = ["switch"]
+PLATFORMS = ["switch", "number"]
 
 
 def normalize_solark_urls(base_url: str, api_url: str) -> tuple[str, str]:

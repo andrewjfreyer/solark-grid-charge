@@ -40,6 +40,26 @@
       "grid_charge": {
         "name": "Grid Charge"
       }
+    },
+    "number": {
+      "slot_1_soc": {
+        "name": "Time Slot 1 Battery SOC"
+      },
+      "slot_2_soc": {
+        "name": "Time Slot 2 Battery SOC"
+      },
+      "slot_3_soc": {
+        "name": "Time Slot 3 Battery SOC"
+      },
+      "slot_4_soc": {
+        "name": "Time Slot 4 Battery SOC"
+      },
+      "slot_5_soc": {
+        "name": "Time Slot 5 Battery SOC"
+      },
+      "slot_6_soc": {
+        "name": "Time Slot 6 Battery SOC"
+      }
     }
   }
 }

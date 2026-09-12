@@ -63,6 +63,42 @@ def _redact_secret_text(text: str) -> str:
     return sanitized
 
 
+def coerce_bool(value: Any) -> Optional[bool]:
+    """Coerce a settings flag to a bool.
+
+    Reads return these as ints (or occasionally bools); the portal posts them
+    as the strings "1" / "0". Returns None for anything unrecognised, so a
+    field the inverter did not report reads as unknown rather than False.
+    """
+    if value is None or isinstance(value, str) and not value.strip():
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return int(value) == 1
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in ("1", "true"):
+            return True
+        if text in ("0", "false"):
+            return False
+    return None
+
+
+def coerce_number(value: Any) -> Optional[float]:
+    """Coerce a numeric setting to a float, or None if it is not numeric."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except ValueError:
+            return None
+    return None
+
+
 class SolArkCloudAPIError(Exception):
     """Exception for Sol-Ark Cloud API errors."""
 
@@ -500,23 +536,9 @@ class SolArkCloudAPI:
         """Read the Grid Charge flag out of a settings payload.
 
         `sdChargeOn` is the Battery-tab "Grid Charge" switch ("sd" being the
-        portal's shorthand for mains/grid). The read returns it as an int,
-        while the portal's own switch posts it as the string "1" / "0".
-        Returns None when the inverter did not report the field.
+        portal's shorthand for mains/grid). Returns None when the inverter did
+        not report the field.
         """
         if GRID_CHARGE_FIELD not in settings:
             return None
-        value = settings.get(GRID_CHARGE_FIELD)
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, (int, float)):
-            return int(value) == 1
-        if isinstance(value, str):
-            return value.strip() in ("1", "true", "True")
-        return None
-
-    async def async_set_grid_charge(self, enabled: bool) -> None:
-        """Enable or disable charging the battery from the grid."""
-        await self.async_write_settings(
-            **{GRID_CHARGE_FIELD: "1" if enabled else "0"}
-        )
+        return coerce_bool(settings.get(GRID_CHARGE_FIELD))
